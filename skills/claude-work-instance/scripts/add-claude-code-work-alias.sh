@@ -95,18 +95,27 @@ awk -v b="$BEGIN_MARK" -v e="$END_MARK" '
 ${NAME}() {
   local _cfg="${CONFIG_DIR}"
   local _svc="${KEYCHAIN_SVC}"
-  local _key=""
+  local _bin _key=""
+  # Resolve a claude binary: prefer one on PATH; else the newest
+  # Claude-Desktop-managed copy (it auto-updates, so glob the latest).
+  _bin="\$(command -v claude 2>/dev/null || true)"
+  if [ -z "\$_bin" ]; then
+    _bin="\$(ls -1dt "\$HOME/Library/Application Support/Claude/claude-code/"*/claude.app/Contents/MacOS/claude 2>/dev/null | head -1)"
+  fi
+  if [ -z "\$_bin" ]; then
+    echo "${NAME}: no 'claude' binary found. Install the Claude Code CLI, or open Claude Desktop once so it fetches one." >&2
+    return 1
+  fi
   if [ -n "\$_svc" ]; then
     _key="\$(security find-generic-password -s "\$_svc" -w 2>/dev/null)"
     if [ -z "\$_key" ]; then
       echo "${NAME}: no API key in Keychain service '\$_svc'." >&2
-      echo "  add it once with:" >&2
-      echo "  security add-generic-password -s '\$_svc' -a \"\$USER\" -w" >&2
+      echo "  add it once with: security add-generic-password -s '\$_svc' -a \"\$USER\" -w" >&2
       return 1
     fi
-    CLAUDE_CONFIG_DIR="\$_cfg" ANTHROPIC_API_KEY="\$_key" command claude "\$@"
+    CLAUDE_CONFIG_DIR="\$_cfg" ANTHROPIC_API_KEY="\$_key" "\$_bin" "\$@"
   else
-    CLAUDE_CONFIG_DIR="\$_cfg" command claude "\$@"
+    CLAUDE_CONFIG_DIR="\$_cfg" "\$_bin" "\$@"
   fi
 }
 BLOCK
