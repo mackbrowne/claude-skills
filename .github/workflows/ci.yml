@@ -1,0 +1,46 @@
+name: ci
+
+on:
+  push:
+    branches: ["**"]
+    tags: ["v*"]
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: shellcheck bundled scripts
+        run: |
+          shellcheck --version
+          # Fail only on genuine errors; warnings/info don't block.
+          find skills -name '*.sh' -print0 \
+            | xargs -0 -r shellcheck -S error
+
+      - name: validate SKILL.md frontmatter
+        run: |
+          python3 -m pip install --quiet pyyaml
+          python3 tools/validate.py
+
+  package:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: build .skill packages
+        run: bash tools/package.sh
+
+      - name: upload packaged skills (artifact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: skills
+          path: dist/*.skill
+
+      - name: attach to GitHub Release (on v* tag)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.skill

@@ -1,0 +1,6 @@
+.DS_Store
+*.bak
+*.bak.cwskill.*
+__pycache__/
+.venv/
+/tmp/
