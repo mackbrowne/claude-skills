@@ -9,6 +9,7 @@ a `SKILL.md` plus any bundled scripts.
 | Skill | What it does |
 |---|---|
 | [`claude-work-instance`](skills/claude-work-instance) | **macOS.** Sets up a separate, branded Claude Desktop instance with a fully isolated profile (own login/history/settings, single-instance, runs next to personal Claude) **and** a `claude-work` Claude Code CLI command/alias with an isolated `CLAUDE_CONFIG_DIR`. Encodes the macOS code-signing/Keychain pitfalls that make naive attempts fail silently. |
+| [`expo-parallel-worktrees`](skills/expo-parallel-worktrees) | **Expo / React Native.** Runs one isolated dev instance per git worktree or agent session: a deterministic Metro port and a dedicated simulator/emulator via [expo-harness](https://github.com/mackbrowne/expo-harness), plus the strategy behind it, how to prove which checkout a device is running, and rules for sharing one machine between parallel sessions. |
 
 ## Installing a skill
 
